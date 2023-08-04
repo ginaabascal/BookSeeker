@@ -3,8 +3,12 @@
 #include <iomanip>
 #include <vector>
 #include <fstream>
+#include "BTree.h"
 using namespace std;
 int main() {
+    BTree bTree;
+    // FIXME: used for testing. Delete in final code.
+    int times = 0;
     ifstream bookList("goodreads_books.json");
     vector<Book*> books;
     string line;
@@ -17,7 +21,7 @@ int main() {
     bool hasGenre = false; // Is true if a book has one of the genres a user can choose to search for
     double rating;
     cout << fixed << setprecision(2); // Makes it so doubles print with two decimal places
-    while(getline(bookList, line)) {
+    while(getline(bookList, line) && times < 100) {
         istringstream str(line);
         string token;
         // Determines if book is in English
@@ -108,6 +112,7 @@ int main() {
                 if (inEnglish && hasGenre && (pages != -1) && (rating != -1)) {
                     title = tempTitle.substr(0, tempTitle.size() - 1);
                     books.push_back(new Book(title, rating, pages, genres));
+                    times++;
                 }
                 // Resets genre array and hasGenre bool
                 hasGenre = false;
@@ -117,8 +122,6 @@ int main() {
             }
         }
     }
-
-    BTree bTree;
 
     for (Book* book : books) {
         bTree.insert(*book);

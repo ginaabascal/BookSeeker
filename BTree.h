@@ -71,9 +71,9 @@ private:
 
     void insertNonFull(Node* node, const Book& book) {
         int i = node->size - 1;
-
         if (node->isLeaf) {
-            node->books.push_back(Book("", 0.0, 0, nullptr)); // Temporary book for comparison
+            bool arr[5] ={false,false,false,false,false};
+            node->books.emplace_back(Book("", 0.0, 0, arr)); // Temporary book for comparison
             while (i >= 0 && book._rating > node->books[i]._rating) {
                 node->books[i + 1] = node->books[i];
                 i--;
@@ -102,11 +102,11 @@ private:
         }
 
         if (!node->isLeaf) {
-            for (int i = 0; i < node->size + 1; i++) {
-                printTopBooks(node->children[i], count);
-            }
+//            for (int i = 0; i < node->size + 1; i++) {
+//                printTopBooks(node->children[i], count);
+//            }
+            printTopBooks(node->children[node->size - 1], count);
         }
-
         for (int i = 0; i < node->size; i++) {
             cout << "Title: " << node->books[i]._title << ", Rating: " << node->books[i]._rating << ", Pages: " << node->books[i]._pages << ", Genre: ";
             for (int j = 0; j < 5; j++) {
@@ -164,6 +164,7 @@ public:
     }
 
     void insert(const Book& book) {
+        cout << "INSERTED";
         if (root == nullptr) {
             root = new Node(true);
             root->books.push_back(book);
@@ -175,7 +176,9 @@ public:
                 splitChild(newRoot, 0);
                 root = newRoot;
             }
-            insertNonFull(root, book);
+            else {
+                insertNonFull(root, book);
+            }
         }
     }
 
