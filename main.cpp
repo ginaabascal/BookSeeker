@@ -117,5 +117,28 @@ int main() {
             }
         }
     }
+
+    BTree bTree;
+
+    for (Book* book : books) {
+        bTree.insert(*book);
+    }
+
+    cout << "Top 10 Books Based on Highest Rating:" << endl;
+    vector<Book> topBooks = bTree.getTopBooks(10);
+    for (const Book& book : topBooks) {
+        cout << "Title: " << book._title << ", Rating: " << book._rating
+                  << ", Pages: " << book._pages << ", Genre: ";
+
+        cout << endl;
+    }
+    // Delete the top books from the B+ tree
+    bTree.deleteBooks(topBooks);
+
+    // Free memory for the "books" vector and its elements (Book objects)
+    for (Book* book : books) {
+        delete book;
+    }
+    books.clear();
     return 0;
 }
