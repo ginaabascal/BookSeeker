@@ -11,9 +11,10 @@ private:
         vector<double> keys;
         vector<Node *> children;
         bool isLeaf = false;
-
+        Node* sibling;
         Node(bool leaf)
         {
+            sibling = nullptr;
             isLeaf = leaf;
         }
     };
@@ -123,6 +124,11 @@ public:
         } else {
             Node *child = parent->children[childIndex];
             Node *newNode = new Node(child->isLeaf);
+            if (child->isLeaf)
+            {
+                newNode->sibling = child->sibling;
+                child->sibling = newNode;
+            }
             int midIndex = child->size / 2;
             if (child->keys[midIndex] == child->keys[midIndex - 1]) {
                 cout << "equals";
@@ -264,6 +270,24 @@ public:
             }
         }
     }
+    void printLeaves()
+    {
+        Node* n = root;
+        while(!n->isLeaf) {
+            n = n->children[0];
+        }
+        int i = 0;
+        while(n != nullptr && i < n->size) {
+            cout << n->keys[i];
+            i++;
+            if(i == n->size)
+            {
+                cout << "NEXTNODE";
+                n = n->sibling;
+                i = 0;
+            }
+        }
+    }
     void printTopBooks(Node* node, Node* parent, int& count, int desiredGenre, int pageCount) {
         {
             for (int i = 1; i < node->children.size(); i++) {
@@ -276,7 +300,8 @@ public:
                 }
             }
                 if (count > 0 && node->isLeaf) {
-                    for (int i = 0; i < node->size; i++) {
+                    int i = 0;
+                    while(node != nullptr && i < node->size) {
                         if (node->books[i]->_genres[desiredGenre]) {
                             cout << "Title: " << node->books[i]->_title << ", Rating: " << node->books[i]->_rating
                                  << ", Pages: "
@@ -298,6 +323,15 @@ public:
                             }
                             cout << endl;
                             count--;
+                        }
+                        if (count == 0){
+                            break;
+                        }
+                        i++;
+                        if(i == node->size)
+                        {
+                            node = node->sibling;
+                            i = 0;
                         }
                     }
             }

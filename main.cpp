@@ -130,6 +130,8 @@ int main() {
             }
         }
     }
+    bPlusTree.checkNodes();
+    bPlusTree.printLeaves();
     int desiredGenre;
     int hours;
     int minutes;

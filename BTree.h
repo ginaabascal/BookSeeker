@@ -106,7 +106,6 @@ private:
     void insertNonFull(Node* node, Book* book) {
         int i = node->size - 1;
         if (node->isLeaf) {
-            bool arr[5] ={false,false,false,false,false};
             node->books.emplace_back(nullptr); // Temporary book for comparison
             while (i >= 0 && book->_pages < node->books[i]->_pages) {
                 node->books[i + 1] = node->books[i];
@@ -154,7 +153,6 @@ private:
                         std::cout << "Fantasy";
                     }
                     cout << endl;
-                    deleteBook(node, i);
                     count--;
                 }
             }
@@ -183,7 +181,6 @@ private:
                     std::cout << "Fantasy";
                 }
                 cout << endl;
-                deleteBook(node, i);
                 count--;
             }
         }
@@ -224,26 +221,15 @@ private:
                         cout << endl;
                         count--;
                     }
+                    if (count == 0){
+                        break;
+                    }
                 }
             }
         }
 
     }
-    // TODO: FIX DELETE FUNCTION
-    void deleteBook(Node* node, int pos) {
-        for (int i = pos; i < node->books.size() - 1; i++) {
-            node->books[i] = node->books[i + 1];
-        }
-        if(!node->isLeaf && node->size < T - 1) {
-            if(node->children[pos]->size >= T)
-            {
-                node->children[pos]->books[node->size - 1];
-            }
-        }
-        node->books.erase(node->books.end() - 1);
-        node->size--;
 
-    }
     Node* findSpot(Book* b, Node* r)
     {
         Node *n = r;
