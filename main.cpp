@@ -140,14 +140,30 @@ int main() {
     int minutes;
     int readingSpeed;
     cout << "Enter number corresponding to desired genre (1. Mystery 2. Romance 3. Sci-fi 4. Historical Fiction 5. Fantasy): ";
-    cin >> desiredGenre;
+    while (!(cin >> desiredGenre) || desiredGenre < 1 || desiredGenre > 5) {
+        cout << "Invalid input. Please enter a number between 1 and 5: ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
     desiredGenre--;
     cout << "\nOn a scale of 1 to 4, with 4 being the fastest, How fast do you read? ";
-    cin >> readingSpeed;
+    while (!(cin >> readingSpeed) || readingSpeed < 1 || readingSpeed > 4) {
+        cout << "Invalid input. Please enter a number between 1 and 4: ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
     cout << "\nHow long would you like the book to take to read? \nHours: ";
-    cin >> hours;
+    while (!(cin >> hours) || hours < 0) {
+        cout << "Invalid input. Please enter a positive number: ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
     cout << "Minutes: ";
-    cin >> minutes;
+    while (!(cin >> minutes) || minutes < 0 || minutes >= 60) {
+        cout << "Invalid input. Please enter a number between 0 and 59: ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
     int pageCount = minutes + hours * 60;
     // Reading speed stats from https://swiftread.com/reading-time/1-page
     if (readingSpeed == 1) {
