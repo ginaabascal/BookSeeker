@@ -21,7 +21,6 @@ private:
     };
 
     Node *root;
-    int T = 5; // B+ tree parameter
 
     void destroyTree(Node *node)
     {
@@ -40,69 +39,61 @@ private:
 
     void splitChild(Node *parent, int childIndex)
     {
-        if (parent == nullptr) {
-            Node* newRoot = new Node(false);
-            newRoot->children.push_back(root);
-            splitChild(newRoot, 0);
-            root = newRoot;
-            root->size = 1;
+        Node *child = parent->children[childIndex];
+        Node *newNode = new Node(child->isLeaf);
+        int midIndex = child->size / 2;
+
+        // Copy elements to the new node without resizing the original child vector
+        for (int i = midIndex + 1; i < child->size; i++) {
+            newNode->books.push_back(child->books[i]);
         }
-        else {
-            Node *child = parent->children[childIndex];
-            Node *newNode = new Node(child->isLeaf);
-            int midIndex = child->size / 2;
 
-            // Copy elements to the new node without resizing the original child vector
-            for (int i = midIndex + 1; i < child->size; i++) {
-                newNode->books.push_back(child->books[i]);
+        if (!child->isLeaf) {
+            // Copy child pointers to the new node without resizing the original child vector
+            for (int i = midIndex + 1; i <= child->size; i++) {
+                newNode->children.push_back(child->children[i]);
             }
-            // Remove the copied elements from the original child node
-            child->books.erase(child->books.begin() + midIndex + 1, child->books.end());
+        }
 
-            if (!child->isLeaf) {
-                // Copy child pointers to the new node without resizing the original child vector
-                for (int i = midIndex + 1; i <= child->size; i++) {
-                    newNode->children.push_back(child->children[i]);
-                }
+        // Remove the copied elements from the original child node
+        child->books.erase(child->books.begin() + midIndex + 1, child->books.end());
 
-                // Remove the copied child pointers from the original child node
-                child->children.erase(child->children.begin() + midIndex + 1, child->children.end());
-            }
+        if (!child->isLeaf) {
+            child->children.erase(child->children.begin() + midIndex + 1, child->children.end());
+        }
 
-            // Insert the new node into the parent's children vector
-            parent->children.insert(parent->children.begin() + childIndex + 1, newNode);
+        // Insert the new node into the parent's children vector
+        parent->children.insert(parent->children.begin() + childIndex + 1, newNode);
 
-            // Update parent's books vector with the appropriate book from the child node
-            parent->books.insert(parent->books.begin() + childIndex, child->books[midIndex]);
-            parent->size++;
-            // Update sizes of child and new nodes
-            child->books.erase(child->books.begin() + midIndex, child->books.end());
-            child->size = midIndex;
-            newNode->size = midIndex;
+        // Update parent's books vector with the appropriate book from the child node
+        parent->books.insert(parent->books.begin() + childIndex, child->books[midIndex]);
+        parent->size++;
 
-            if (parent->books.size() >= 2 * T - 1) {
-                Node *newParent = nullptr;
-                int pos = 0;
-                if (parent != root) {
-                    newParent = findParent(parent);
-                    if (parent->books[0]->_pages >= newParent->books[newParent->size-1]->_pages) {
-                        pos = newParent->children.size()-1;
-                    }
-                    for (int i = 0; i < newParent->size; i++) {
-                        if (parent->books[0]->_pages < newParent->books[i]->_pages) {
-                            if (i < newParent->children.size()) {
-                                pos = i;
-                                break;
-                            }
-                        }
+        // Update sizes of child and new nodes
+        child->size = midIndex;
+        newNode->size = midIndex;
+
+        if (parent->books.size() >= 2 * T - 1) {
+            int pos = 0;
+            if (parent != root) {
+                Node *newParent = findParent(parent);
+                for (int i = 0; i < newParent->size; i++) {
+                    if (parent->books[0]->_pages < newParent->books[i]->_pages) {
+                        pos = i;
+                        break;
                     }
                 }
                 splitChild(newParent, pos);
             }
+            else {
+                Node *newRoot = new Node(false);
+                newRoot->children.push_back(root);
+                splitChild(newRoot, 0);
+                root = newRoot;
+                root->size = 1;
+            }
         }
     }
-
-
 
     void insertNonFull(Node* node, Book* book) {
         int i = node->size - 1;
@@ -156,11 +147,10 @@ private:
                     }
                     if (node->books[i]->_genres[3] == 1) {
                         std::cout << "Historical-Fiction ";
-                    }
-                    if (node->books[i]->_genres[4] == 1) {
+                    }if (node->books[i]->_genres[4] == 1) {
                         std::cout << "Fantasy";
                     }
-                    cout << endl << endl;
+                    cout << endl;
                     count--;
                 }
                 if (count == 0){
@@ -171,18 +161,18 @@ private:
 
     }
 
-    Node* findSpot(Book* book, Node* node)
+    Node* findSpot(Book* b, Node* r)
     {
-        Node *n = node;
+        Node *n = r;
         int i = 0;
         int pos = 0;
         while (!n->children[0]->isLeaf) {
-            if (book->_pages >= n->books[n->books.size() - 1]->_pages) {
+            if (b->_pages >= n->books[n->books.size() - 1]->_pages) {
                 pos = n->children.size() - 1;
             }
             else {
                 for (i = 0; i < n->children.size(); i++) {
-                    if (i < n->size && book->_pages < n->books[i]->_pages) {
+                    if (i < n->size && b->_pages < n->books[i]->_pages) {
                         if (!n->children[i]->isLeaf) {
                             pos = i;
                             break;
@@ -217,6 +207,7 @@ private:
     }
 
 public:
+    const static int T = 5; // B+ tree parameter
 
     BTree() : root(nullptr) {}
 
@@ -240,16 +231,15 @@ public:
                     }
                 }
             }
-            if (parent->children[pos]->size == 2 * T - 2) {
-                insertNonFull(parent->children[pos], book);
+            if (parent->children[pos]->size == 2 * T - 1) {
                 splitChild(parent, pos);
+                if (book->_pages >= parent->books[pos]->_pages) {
+                    pos++;
+                }
             }
-            else {
-                insertNonFull(parent->children[pos], book);
-            }
+            insertNonFull(parent->children[pos], book);
         }
-        else
-        {
+        else {
             if (root->size == 2 * T - 1) {
                 Node* newRoot = new Node(false);
                 newRoot->children.push_back(root);
@@ -257,9 +247,7 @@ public:
                 root = newRoot;
                 root->size = 1;
             }
-            else {
-                insertNonFull(root, book);
-            }
+            insertNonFull(root, book);
         }
     }
 
@@ -299,33 +287,33 @@ public:
             cout << "NEWROOT";
         }
         cout << "LEVEL 3";
-            for (auto child2 : root->children) {
-                for (auto child1: child2->children) {
-                    for (auto child: child1->children) {
-                        for (auto book: child->books) {
-                            cout << book->_pages << ", ";
-                        }
-                        cout << "||";
+        for (auto child2 : root->children) {
+            for (auto child1: child2->children) {
+                for (auto child: child1->children) {
+                    for (auto book: child->books) {
+                        cout << book->_pages << ", ";
                     }
-                    cout << "NEWROOT";
+                    cout << "||";
                 }
+                cout << "NEWROOT";
             }
+        }
 
         cout << "LEVEL 4";
-            {
-                for (auto child3 :root->children) {
-                    for (auto child2: child3->children) {
-                        for (auto child1: child2->children) {
-                            cout << "NEWROOT";
-                            for (auto child: child1->children) {
-                                for (auto book: child->books) {
-                                    cout << book->_pages << ", ";
-                                }
-                                cout << "||";
+        {
+            for (auto child3 :root->children) {
+                for (auto child2: child3->children) {
+                    for (auto child1: child2->children) {
+                        cout << "NEWROOT";
+                        for (auto child: child1->children) {
+                            for (auto book: child->books) {
+                                cout << book->_pages << ", ";
                             }
+                            cout << "||";
                         }
                     }
                 }
             }
         }
+    }
 };
