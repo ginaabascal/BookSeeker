@@ -13,6 +13,7 @@ int main() {
     int times = 0;
     ifstream bookList("goodreads_books.json");
     vector<Book*> books;
+    vector<int> pageNumbersVisited;
     string line;
     bool genres[5];
     // Values correspond to T/F values indicating whether books fits genres of
@@ -23,7 +24,7 @@ int main() {
     bool hasGenre = false; // Is true if a book has one of the genres a user can choose to search for
     double rating;
     cout << fixed << setprecision(2); // Makes it so doubles print with two decimal places
-    while(getline(bookList, line) && times < 54) {
+    while(getline(bookList, line) && times < 1000) {
         istringstream str(line);
         string token;
         // Determines if book is in English
@@ -111,9 +112,10 @@ int main() {
                 }
                 // Creates and object and adds to vector of books if language is English, it contains a searchable genre
                 // page count is available, and rating is available
-                if (inEnglish && hasGenre && (pages != -1) && (rating != -1)) {
+                if (inEnglish && hasGenre && (pages != -1) && (rating != -1) && (find(pageNumbersVisited.begin(), pageNumbersVisited.end(), pages) == pageNumbersVisited.end())) {
                     title = tempTitle.substr(0, tempTitle.size() - 1);
                     books.push_back(new Book(title, rating, pages, genres));
+                    pageNumbersVisited.push_back(pages);
                     times++;
                 }
                 // Resets genre array and hasGenre bool
@@ -124,19 +126,25 @@ int main() {
             }
         }
     }
-    for (Book* book : books) {
-        bTree.Insert(*book);
+    for (Book* book : books)
+    {
+        bPlusTree.Insert(*book);
     }
-    cout <<"PRINTING";
-    bTree.checkNodes();
-    cout << "Top 10 Books Based on Highest Rating:" << endl;
-    bTree.printTopBooks(10);
-    // Delete the top books from the B+ tree
-
-    // Free memory for the "books" vector and its elements (Book objects)
-    for (Book* book : books) {
-        delete book;
-    }
-    books.clear();
+    bPlusTree.checkNodes();
+    bPlusTree.printTopBooks(10);
+//    for (Book* book : books) {
+//        bTree.Insert(*book);
+//    }
+//    cout <<"PRINTING";
+//    bTree.checkNodes();
+//    cout << "Top 10 Books Based on Highest Rating:" << endl;
+//    bTree.printTopBooks(50);
+//    // Delete the top books from the B+ tree
+//
+//    // Free memory for the "books" vector and its elements (Book objects)
+//    for (Book* book : books) {
+//        delete book;
+//    }
+//    books.clear();
     return 0;
 }

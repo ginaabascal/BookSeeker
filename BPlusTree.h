@@ -26,13 +26,13 @@ public:
         if (root == nullptr) {
             root = new Node(true);
             root->books.push_back(book);
-            root->keys.push_back(book._rating);
+            root->keys.push_back(book._pages);
             root->size = 1;
         } else if (!root->isLeaf) {
             Node *parent = findSpot(book, root);
             int pos = parent->children.size() - 1;
             for (int i = 0; i < parent->size; i++) {
-                if (book._rating < parent->keys[i]) {
+                if (book._pages < parent->keys[i]) {
                     if (i < parent->children.size()) {
                         pos = i;
                         break;
@@ -64,11 +64,11 @@ public:
         int i = 0;
         int pos = 0;
         while (!n->children[0]->isLeaf) {
-            if (b._rating >= n->keys[n->keys.size() - 1]) {
-                pos = n->keys.size() - 1;
+            if (b._pages >= n->keys[n->keys.size() - 1]) {
+                pos = n->children.size() - 1;
             } else {
                 for (i = 0; i < n->children.size(); i++) {
-                    if (i < n->size && b._rating < n->keys[i]) {
+                    if (i < n->size && b._pages < n->keys[i]) {
                         if (!n->children[i]->isLeaf) {
                             pos = i;
                             break;
@@ -88,23 +88,23 @@ public:
             bool arr[5] = {false, false, false, false, false};
             node->books.emplace_back(Book("", 0.0, 0, arr)); // Temporary book for comparison
             node->keys.emplace_back(0.0);
-            while (i >= 0 && book._rating < node->keys[i]) {
+            while (i >= 0 && book._pages < node->keys[i]) {
                 node->books[i + 1] = node->books[i];
                 node->keys[i + 1] = node->keys[i];
                 i--;
             }
             node->books[i + 1] = book;
-            node->keys[i + 1] = book._rating;
+            node->keys[i + 1] = book._pages;
             node->size++;
         } else {
-            while (i >= 0 && book._rating < node->books[i]._rating) {
+            while (i >= 0 && book._pages < node->books[i]._pages) {
                 i--;
             }
             i++;
 
             if (node->children[i]->size == 2 * T - 1) {
                 splitChild(node, i);
-                if (book._rating >= node->books[i]._rating) {
+                if (book._pages >= node->books[i]._pages) {
                     i++;
                 }
             }
@@ -124,9 +124,12 @@ public:
             Node *child = parent->children[childIndex];
             Node *newNode = new Node(child->isLeaf);
             int midIndex = child->size / 2;
-
+            if (child->keys[midIndex] == child->keys[midIndex - 1]) {
+                cout << "equals";
+                midIndex = midIndex - 1;
+            }
             // Copy elements to the new node without resizing the original child vector
-            for (int i = midIndex + 1; i < child->size; i++) {
+            for (int i = midIndex; i < child->size; i++) {
                 if (child->isLeaf) {
                     newNode->books.push_back(child->books[i]);
                 }
@@ -134,9 +137,9 @@ public:
             }
             // Remove the copied elements from the original child node
             if (child->isLeaf) {
-                child->books.erase(child->books.begin() + midIndex + 1, child->books.end());
+                child->books.erase(child->books.begin() + midIndex, child->books.end());
             }
-            child->keys.erase(child->keys.begin() + midIndex + 1, child->keys.end());
+            child->keys.erase(child->keys.begin() + midIndex, child->keys.end());
 
             if (!child->isLeaf) {
                 // Copy child pointers to the new node without resizing the original child vector
@@ -152,7 +155,10 @@ public:
             parent->children.insert(parent->children.begin() + childIndex + 1, newNode);
 
             // Update parent's books vector with the appropriate book from the child node
-            parent->keys.insert(parent->keys.begin() + childIndex, child->keys[midIndex + 1]);
+            parent->keys.insert(parent->keys.begin() + childIndex, child->keys[midIndex]);
+            if (!newNode->isLeaf) {
+                newNode->keys.erase(newNode->keys.begin());
+            }
             parent->size++;
             // Update sizes of child and new nodes
             child->size = child->keys.size();
@@ -183,15 +189,15 @@ public:
     Node *findParent(Node *node)
     {
         Node *n = root;
-        Node *parent;
+        Node *parent = nullptr;
         int i = 0;
         while (n != node) {
             int pos = 0;
-            if (node->books[0]._rating >= n->books[n->books.size() - 1]._rating) {
+            if (node->keys[0] >= n->keys[n->keys.size() - 1]) {
                 pos = n->children.size() - 1;
             }
             for (i = 0; i < n->children.size(); i++) {
-                if (i < n->books.size() && node->books[0]._rating < n->books[i]._rating) {
+                if (i < n->keys.size() && node->keys[0] < n->keys[i]) {
                     pos = i;
                     break;
                 }
@@ -257,5 +263,69 @@ public:
                 }
             }
         }
+    }
+    void printTopBooks(Node* node, int& count) {
+        if (node->children.size() != 0)
+        {
+            for (int i = node->children.size() - 1; i >= 0; i--) {
+                printTopBooks(node->children[i], count);
+                if (count > 0 && node->isLeaf) {
+                    cout << "Title: " << node->books[i]._title << ", Rating: " << node->books[i]._rating << ", Pages: "
+                         << node->books[i]._pages << ", Genres: ";
+                    if (node->books[i]._genres[0] == 1) {
+                        std::cout << "Mystery ";
+                    }
+                    if (node->books[i]._genres[1] == 1) {
+                        std::cout << "Romance ";
+                    }
+                    if (node->books[i]._genres[2] == 1) {
+                        std::cout << "Science Fiction ";
+                    }
+                    if (node->books[i]._genres[3] == 1) {
+                        std::cout << "Historical-Fiction ";
+                    }
+                    if (node->books[i]._genres[4] == 1) {
+                        std::cout << "Fantasy";
+                    }
+                    cout << endl;
+                    count--;
+                }
+            }
+        }
+        for (int i = node->size-1; i >= 0; i--)
+        {
+            if (count > 0 && node->isLeaf) {
+                cout << "Title: " << node->books[i]._title << ", Rating: " << node->books[i]._rating << ", Pages: " << node->books[i]._pages << ", Genres: ";
+                if (node->books[i]._genres[0] == 1)
+                {
+                    std::cout << "Mystery ";
+                }
+                if (node->books[i]._genres[1] == 1)
+                {
+                    std::cout << "Romance ";
+                }
+                if (node->books[i]._genres[2] == 1)
+                {
+                    std::cout << "Science Fiction ";
+                }
+                if (node->books[i]._genres[3] == 1)
+                {
+                    std::cout << "Historical-Fiction ";
+                }if (node->books[i]._genres[4] == 1)
+                {
+                    std::cout << "Fantasy";
+                }
+                cout << endl;
+                count--;
+            }
+        }
+
+    }
+    void printTopBooks(int count) {
+        if (root == nullptr) {
+            cout << "No books in the tree." << endl;
+            return;
+        }
+        printTopBooks(root, count);
     }
 };

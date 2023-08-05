@@ -84,11 +84,11 @@ private:
                 int pos = 0;
                 if (parent != root) {
                     newParent = findParent(parent);
-                    if (parent->books[0]._rating >= newParent->books[newParent->size-1]._rating) {
+                    if (parent->books[0]._pages >= newParent->books[newParent->size-1]._pages) {
                         pos = newParent->children.size()-1;
                     }
                     for (int i = 0; i < newParent->size; i++) {
-                        if (parent->books[0]._rating < newParent->books[i]._rating) {
+                        if (parent->books[0]._pages < newParent->books[i]._pages) {
                             if (i < newParent->children.size()) {
                                 pos = i;
                                 break;
@@ -108,21 +108,21 @@ private:
         if (node->isLeaf) {
             bool arr[5] ={false,false,false,false,false};
             node->books.emplace_back(Book("", 0.0, 0, arr)); // Temporary book for comparison
-            while (i >= 0 && book._rating < node->books[i]._rating) {
+            while (i >= 0 && book._pages < node->books[i]._pages) {
                 node->books[i + 1] = node->books[i];
                 i--;
             }
             node->books[i + 1] = book;
             node->size++;
         } else {
-            while (i >= 0 && book._rating < node->books[i]._rating) {
+            while (i >= 0 && book._pages < node->books[i]._pages) {
                 i--;
             }
             i++;
 
             if (node->children[i]->size == 2 * T - 1) {
                 splitChild(node, i);
-                if (book._rating >= node->books[i]._rating) {
+                if (book._pages >= node->books[i]._pages) {
                     i++;
                 }
             }
@@ -210,12 +210,12 @@ private:
         int i = 0;
         int pos = 0;
         while (!n->children[0]->isLeaf) {
-            if (b._rating >= n->books[n->books.size() - 1]._rating) {
+            if (b._pages >= n->books[n->books.size() - 1]._pages) {
                 pos = n->children.size() - 1;
             }
             else {
                 for (i = 0; i < n->children.size(); i++) {
-                    if (i < n->size && b._rating < n->books[i]._rating) {
+                    if (i < n->size && b._pages < n->books[i]._pages) {
                         if (!n->children[i]->isLeaf) {
                             pos = i;
                             break;
@@ -234,11 +234,11 @@ private:
         int i = 0;
         while (n != node) {
             int pos = 0;
-            if (node->books[0]._rating >= n->books[n->books.size() - 1]._rating) {
+            if (node->books[0]._pages >= n->books[n->books.size() - 1]._pages) {
                 pos = n->children.size() - 1;
             }
             for (i = 0; i < n->children.size(); i++) {
-                if (i < n->books.size() && node->books[0]._rating < n->books[i]._rating) {
+                if (i < n->books.size() && node->books[0]._pages < n->books[i]._pages) {
                     pos = i;
                     break;
                 }
@@ -267,7 +267,7 @@ public:
             Node* parent = findSpot(book, root);
             int pos = parent->children.size() - 1;
             for(int i = 0; i < parent->size; i++) {
-                if (book._rating < parent->books[i]._rating) {
+                if (book._pages < parent->books[i]._pages) {
                     if (i < parent->children.size()) {
                         pos = i;
                         break;
@@ -315,7 +315,7 @@ public:
     {
         for (auto book : root->books)
         {
-            cout << book._rating << ", ";
+            cout << book._pages << ", ";
         }
         cout << "||";
         cout << "LEVEL 1";
@@ -323,7 +323,7 @@ public:
         {
             for (auto book : child->books)
             {
-                cout << book._rating << ", ";
+                cout << book._pages << ", ";
             }
             cout << "||";
         }
@@ -332,7 +332,7 @@ public:
         {
             for (auto child : child1->children) {
                 for (auto book: child->books) {
-                    cout << book._rating << ", ";
+                    cout << book._pages << ", ";
                 }
                 cout << "||";
             }
@@ -343,7 +343,7 @@ public:
                 for (auto child1: child2->children) {
                     for (auto child: child1->children) {
                         for (auto book: child->books) {
-                            cout << book._rating << ", ";
+                            cout << book._pages << ", ";
                         }
                         cout << "||";
                     }
@@ -359,7 +359,7 @@ public:
                             cout << "NEWROOT";
                             for (auto child: child1->children) {
                                 for (auto book: child->books) {
-                                    cout << book._rating << ", ";
+                                    cout << book._pages << ", ";
                                 }
                                 cout << "||";
                             }
