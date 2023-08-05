@@ -9,7 +9,7 @@ private:
     {
         bool isLeaf;
         int size;
-        vector<Book*> books;
+        vector<double> keys; // Modify the keys vector to store double values (page counts)
         vector<Node *> children;
 
         Node(bool leaf)
@@ -17,11 +17,9 @@ private:
             this->isLeaf = leaf;
             size = 0;
         }
-
     };
 
     Node *root;
-    int T = 5; // B+ tree parameter
 
     void destroyTree(Node *node)
     {
@@ -52,12 +50,12 @@ private:
             Node *newNode = new Node(child->isLeaf);
             int midIndex = child->size / 2;
 
-            // Copy elements to the new node without resizing the original child vector
-            for (int i = midIndex + 1; i < child->size; i++) {
-                newNode->books.push_back(child->books[i]);
+            // Copy keys to the new node without resizing the original child vector
+            for (int i = midIndex; i < child->size; i++) {
+                newNode->keys.push_back(child->keys[i]);
             }
-            // Remove the copied elements from the original child node
-            child->books.erase(child->books.begin() + midIndex + 1, child->books.end());
+            // Remove the copied keys from the original child node
+            child->keys.erase(child->keys.begin() + midIndex, child->keys.end());
 
             if (!child->isLeaf) {
                 // Copy child pointers to the new node without resizing the original child vector
@@ -72,24 +70,24 @@ private:
             // Insert the new node into the parent's children vector
             parent->children.insert(parent->children.begin() + childIndex + 1, newNode);
 
-            // Update parent's books vector with the appropriate book from the child node
-            parent->books.insert(parent->books.begin() + childIndex, child->books[midIndex]);
+            // Update parent's keys vector with the appropriate key from the child node
+            parent->keys.insert(parent->keys.begin() + childIndex, child->keys[midIndex]);
             parent->size++;
             // Update sizes of child and new nodes
-            child->books.erase(child->books.begin() + midIndex, child->books.end());
+            child->keys.erase(child->keys.begin() + midIndex, child->keys.end());
             child->size = midIndex;
             newNode->size = midIndex;
 
-            if (parent->books.size() >= 2 * T - 1) {
+            if (parent->keys.size() >= 2 * T - 1) {
                 Node *newParent = nullptr;
                 int pos = 0;
                 if (parent != root) {
                     newParent = findParent(parent);
-                    if (parent->books[0]->_pages >= newParent->books[newParent->size-1]->_pages) {
-                        pos = newParent->children.size()-1;
+                    if (parent->keys[0] >= newParent->keys[newParent->size - 1]) {
+                        pos = newParent->children.size() - 1;
                     }
                     for (int i = 0; i < newParent->size; i++) {
-                        if (parent->books[0]->_pages < newParent->books[i]->_pages) {
+                        if (parent->keys[0] < newParent->keys[i]) {
                             if (i < newParent->children.size()) {
                                 pos = i;
                                 break;
@@ -102,87 +100,80 @@ private:
         }
     }
 
-
-
-    void insertNonFull(Node* node, Book* book) {
+    void insertNonFull(Node* node, double key) {
         int i = node->size - 1;
         if (node->isLeaf) {
-            node->books.emplace_back(nullptr); // Temporary book for comparison
-            while (i >= 0 && book->_pages < node->books[i]->_pages) {
-                node->books[i + 1] = node->books[i];
+            node->keys.emplace_back(0.0); // Temporary key for comparison
+            while (i >= 0 && key < node->keys[i]) {
+                node->keys[i + 1] = node->keys[i];
                 i--;
             }
-            node->books[i + 1] = book;
+            node->keys[i + 1] = key;
             node->size++;
         } else {
-            while (i >= 0 && book->_pages < node->books[i]->_pages) {
+            while (i >= 0 && key < node->keys[i]) {
                 i--;
             }
             i++;
 
             if (node->children[i]->size == 2 * T - 1) {
                 splitChild(node, i);
-                if (book->_pages >= node->books[i]->_pages) {
+                if (key >= node->keys[i]) {
                     i++;
                 }
             }
-            insertNonFull(node->children[i], book);
+            insertNonFull(node->children[i], key);
         }
     }
 
     void printTopBooks(Node* node, int& count, int desiredGenre, int pageCount) {
-        if (!node->isLeaf && pageCount > node->books[node->size - 1]->_pages){
-            printTopBooks(node->children[node->size -1], count, desiredGenre, pageCount);
+        if (!node->isLeaf && pageCount > node->keys[node->size - 1]) {
+            printTopBooks(node->children[node->size - 1], count, desiredGenre, pageCount);
         }
         for (int i = 0; i < node->size; i++) {
-            if (!node->isLeaf && node->books[i]->_pages > pageCount) {
+            if (!node->isLeaf && node->keys[i] > pageCount) {
                 printTopBooks(node->children[i], count, desiredGenre, pageCount);
             }
         }
         if (count > 0) {
             for (int i = 0; i < node->size; i++) {
-                if (node->books[i]->_genres[desiredGenre]) {
-                    cout << "Title: " << node->books[i]->_title << ", Rating: " << node->books[i]->_rating
-                    << ", Pages: "
-                    << node->books[i]->_pages << ", Genres: ";
-                    if (node->books[i]->_genres[0] == 1) {
-                        std::cout << "Mystery ";
-                    }
-                    if (node->books[i]->_genres[1] == 1) {
-                        std::cout << "Romance ";
-                    }
-                    if (node->books[i]->_genres[2] == 1) {
-                        std::cout << "Science Fiction ";
-                    }
-                    if (node->books[i]->_genres[3] == 1) {
-                        std::cout << "Historical-Fiction ";
-                    }
-                    if (node->books[i]->_genres[4] == 1) {
-                        std::cout << "Fantasy";
-                    }
-                    cout << endl << endl;
-                    count--;
+                cout << "Title: " << node->books[i]->_title << ", Rating: " << node->books[i]->_rating
+                     << ", Pages: " << node->keys[i] << ", Genres: ";
+                if (node->books[i]->_genres[0] == 1) {
+                    std::cout << "Mystery ";
                 }
+                if (node->books[i]->_genres[1] == 1) {
+                    std::cout << "Romance ";
+                }
+                if (node->books[i]->_genres[2] == 1) {
+                    std::cout << "Science Fiction ";
+                }
+                if (node->books[i]->_genres[3] == 1) {
+                    std::cout << "Historical-Fiction ";
+                }
+                if (node->books[i]->_genres[4] == 1) {
+                    std::cout << "Fantasy";
+                }
+                cout << endl;
+                count--;
                 if (count == 0){
                     break;
                 }
             }
         }
-
     }
 
-    Node* findSpot(Book* book, Node* node)
-    {
-        Node *n = node;
+    Node* findSpot(Book* b, Node* r) {
+        Node *n = r;
         int i = 0;
         int pos = 0;
         while (!n->children[0]->isLeaf) {
-            if (book->_pages >= n->books[n->books.size() - 1]->_pages) {
+            if (b->_pages >= n->keys[n->keys.size() - 1]) {
                 pos = n->children.size() - 1;
             }
             else {
                 for (i = 0; i < n->children.size(); i++) {
-                    if (i < n->size && book->_pages < n->books[i]->_pages) {
+                    if (i < n->size && b->_pages < n->keys[i]) {
                         if (!n->children[i]->isLeaf) {
                             pos = i;
                             break;
@@ -194,18 +185,18 @@ private:
         }
         return n;
     }
-    Node* findParent(Node* node)
-    {
+
+    Node* findParent(Node* node) {
         Node *n = root;
         Node *parent;
         int i = 0;
         while (n != node) {
             int pos = 0;
-            if (node->books[0]->_pages >= n->books[n->books.size() - 1]->_pages) {
+            if (node->keys[0] >= n->keys[n->keys.size() - 1]) {
                 pos = n->children.size() - 1;
             }
             for (i = 0; i < n->children.size(); i++) {
-                if (i < n->books.size() && node->books[0]->_pages < n->books[i]->_pages) {
+                if (i < n->keys.size() && node->keys[0] < n->keys[i]) {
                     pos = i;
                     break;
                 }
@@ -217,6 +208,7 @@ private:
     }
 
 public:
+    const static int T = 5; // B-Tree parameter
 
     BTree() : root(nullptr) {}
 
@@ -227,29 +219,29 @@ public:
     void Insert(Book* book) {
         if (root == nullptr) {
             root = new Node(true);
-            root->books.push_back(book);
+            root->keys.push_back(book->_pages);
             root->size = 1;
-        } else if (!root->isLeaf) {
+        }
+        else if (!root->isLeaf) {
             Node* parent = findSpot(book, root);
             int pos = parent->children.size() - 1;
-            for(int i = 0; i < parent->size; i++) {
-                if (book->_pages < parent->books[i]->_pages) {
+            for (int i = 0; i < parent->size; i++) {
+                if (book->_pages < parent->keys[i]) {
                     if (i < parent->children.size()) {
                         pos = i;
                         break;
                     }
                 }
             }
-            if (parent->children[pos]->size == 2 * T - 2) {
-                insertNonFull(parent->children[pos], book);
+            if (parent->children[pos]->size == 2 * T - 1) {
+                insertNonFull(parent->children[pos], book->_pages);
                 splitChild(parent, pos);
             }
             else {
-                insertNonFull(parent->children[pos], book);
+                insertNonFull(parent->children[pos], book->_pages);
             }
         }
-        else
-        {
+        else {
             if (root->size == 2 * T - 1) {
                 Node* newRoot = new Node(false);
                 newRoot->children.push_back(root);
@@ -258,7 +250,7 @@ public:
                 root->size = 1;
             }
             else {
-                insertNonFull(root, book);
+                insertNonFull(root, book->_pages);
             }
         }
     }
