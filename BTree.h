@@ -323,13 +323,55 @@ public:
         }
     }
 
-    void printTopBooks(int count, int desiredGenre, int pageCount) {
-        if (root == nullptr) {
-            cout << "No books in the tree." << endl;
-            return;
+    void printTopBooks(Node* node, Node* parent, int& count, int desiredGenre, int pageCount) {
+    for (int i = 1; i < node->children.size(); i++) {
+        if (!node->isLeaf && node->children[i]->keys[0] >= pageCount) {
+            printTopBooks(node->children[i - 1], node, count, desiredGenre, pageCount);
         }
-        printTopBooks(root, nullptr, count, desiredGenre, pageCount);
+        else if (i == node->children.size() - 1)
+        {
+            printTopBooks(node->children[i - 1], node, count, desiredGenre, pageCount);
+        }
     }
+
+    if (count > 0 && node->isLeaf) {
+        int i = 0;
+        while (node != nullptr && i < node->size) {
+            int genres = node->books[i]->_genres;
+            if ((genres & (1 << desiredGenre)) != 0) {
+                cout << "Title: " << node->books[i]->_title << ", Rating: " << node->books[i]->_rating
+                     << ", Pages: "
+                     << node->books[i]->_pages << ", Genres: ";
+                if (genres & (1 << 0)) {
+                    std::cout << "Mystery ";
+                }
+                if (genres & (1 << 1)) {
+                    std::cout << "Romance ";
+                }
+                if (genres & (1 << 2)) {
+                    std::cout << "Science Fiction ";
+                }
+                if (genres & (1 << 3)) {
+                    std::cout << "Historical Fiction ";
+                }
+                if (genres & (1 << 4)) {
+                    std::cout << "Fantasy";
+                }
+                cout << endl;
+                count--;
+            }
+            if (count == 0) {
+                break;
+            }
+            i++;
+            if (i == node->size) {
+                node = node->sibling;
+                i = 0;
+            }
+        }
+    }
+}
+
 
     void checkNodes()
     {
