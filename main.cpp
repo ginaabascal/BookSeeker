@@ -142,13 +142,37 @@ int main() {
     while (true) {
         cout << "Enter number corresponding to desired genre (1. Mystery 2. Romance 3. Sci-fi 4. Historical Fiction 5. Fantasy): ";
         cin >> desiredGenre;
+        while (!cin || desiredGenre < 1 || desiredGenre > 5) {
+            cout << "Invalid input. Please enter a number between 1 and 5: ";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cin >> desiredGenre;
+        }
         desiredGenre--;
         cout << endl << "On a scale of 1 to 4, with 4 being the fastest, How fast do you read? ";
         cin >> readingSpeed;
+        while (!cin || readingSpeed < 1 || readingSpeed > 4) {
+            cout << "Invalid input. Please enter a number between 1 and 4: ";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cin >> readingSpeed;
+        }
         cout << endl <<"How long would you like the book to take to read?" << endl << "Hours: ";
         cin >> hours;
+        while (!cin|| hours < 0) {
+            cout << "Invalid input. Please enter a positive number: ";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cin >> hours;
+        }
         cout << "Minutes: ";
         cin >> minutes;
+        while (!cin || minutes < 0 || minutes >= 60) {
+            cout << "Invalid input. Please enter a number between 0 and 59: ";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cin >> minutes;
+        }
         int pageCount = minutes + hours * 60;
         // Reading speed stats from https://swiftread.com/reading-time/1-page
         if (readingSpeed == 1) {
@@ -163,14 +187,14 @@ int main() {
         else if (readingSpeed == 5) {
             pageCount = (int)(pageCount / (5.0/6.0));
         }
-        cout << "Reading for " << hours << " hours and " << minutes << " minutes at a speed level of " << readingSpeed <<
+        cout << endl << "Reading for " << hours << " hours and " << minutes << " minutes at a speed level of " << readingSpeed <<
         " is equivalent to about " << pageCount << " pages" << endl << "Books with close to " << pageCount << " pages: " << endl << endl;
-        cout << "BTREE:" << endl;
+        cout << endl << "BTREE:" << endl;
         auto start = chrono::steady_clock::now();
         bTree.printTopBooks(10, desiredGenre, pageCount);
         auto end = chrono::steady_clock::now();
         cout << "time taken to find books: " << chrono::duration_cast<chrono::microseconds >(end-start).count() << " microseconds" << endl;
-        cout << "BPlusTREE:" << endl;
+        cout << endl << "BPlusTREE:" << endl;
         start = chrono::steady_clock::now();
         bPlusTree.printTopBooks(10, desiredGenre, pageCount);
         end = chrono::steady_clock::now();

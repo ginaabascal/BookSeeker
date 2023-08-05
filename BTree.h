@@ -21,6 +21,7 @@ private:
     };
 
     Node *root;
+    int T = 5; // B+ tree parameter
 
     void destroyTree(Node *node)
     {
@@ -159,7 +160,7 @@ private:
                     if (node->books[i]->_genres[4] == 1) {
                         std::cout << "Fantasy";
                     }
-                    cout << endl;
+                    cout << endl << endl;
                     count--;
                 }
                 if (count == 0){
@@ -170,18 +171,18 @@ private:
 
     }
 
-    Node* findSpot(Book* b, Node* r)
+    Node* findSpot(Book* book, Node* node)
     {
-        Node *n = r;
+        Node *n = node;
         int i = 0;
         int pos = 0;
         while (!n->children[0]->isLeaf) {
-            if (b->_pages >= n->books[n->books.size() - 1]->_pages) {
+            if (book->_pages >= n->books[n->books.size() - 1]->_pages) {
                 pos = n->children.size() - 1;
             }
             else {
                 for (i = 0; i < n->children.size(); i++) {
-                    if (i < n->size && b->_pages < n->books[i]->_pages) {
+                    if (i < n->size && book->_pages < n->books[i]->_pages) {
                         if (!n->children[i]->isLeaf) {
                             pos = i;
                             break;
@@ -216,7 +217,6 @@ private:
     }
 
 public:
-    const static int T = 5; // B+ tree parameter
 
     BTree() : root(nullptr) {}
 
