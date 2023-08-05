@@ -4,9 +4,11 @@
 #include <vector>
 #include <fstream>
 #include "BTree.h"
+#include "BPlusTree.h"
 using namespace std;
 int main() {
     BTree bTree;
+    BPlusTree bPlusTree;
     // FIXME: used for testing. Delete in final code.
     int times = 0;
     ifstream bookList("goodreads_books.json");
@@ -21,7 +23,7 @@ int main() {
     bool hasGenre = false; // Is true if a book has one of the genres a user can choose to search for
     double rating;
     cout << fixed << setprecision(2); // Makes it so doubles print with two decimal places
-    while(getline(bookList, line) && times < 100) {
+    while(getline(bookList, line) && times < 54) {
         istringstream str(line);
         string token;
         // Determines if book is in English
@@ -122,21 +124,14 @@ int main() {
             }
         }
     }
-
     for (Book* book : books) {
-        bTree.insert(*book);
+        bTree.Insert(*book);
     }
-
+    cout <<"PRINTING";
+    bTree.checkNodes();
     cout << "Top 10 Books Based on Highest Rating:" << endl;
-    vector<Book> topBooks = bTree.getTopBooks(10);
-    for (const Book& book : topBooks) {
-        cout << "Title: " << book._title << ", Rating: " << book._rating
-                  << ", Pages: " << book._pages << ", Genre: ";
-
-        cout << endl;
-    }
+    bTree.printTopBooks(10);
     // Delete the top books from the B+ tree
-    bTree.deleteBooks(topBooks);
 
     // Free memory for the "books" vector and its elements (Book objects)
     for (Book* book : books) {
