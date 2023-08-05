@@ -129,14 +129,21 @@ private:
         }
     }
 
-    void printTopBooks(Node* node, int& count) {
-        if (node->children.size() != 0)
-        {
-            for (int i = node->children.size() - 1; i >= 0; i--) {
-                printTopBooks(node->children[i], count);
-                if (count > 0) {
-                    cout << "Title: " << node->books[i]->_title << ", Rating: " << node->books[i]->_rating << ", Pages: "
-                         << node->books[i]->_pages << ", Genres: ";
+    void printTopBooks(Node* node, int& count, int desiredGenre, int pageCount) {
+        if (!node->isLeaf && pageCount > node->books[node->size - 1]->_pages){
+            printTopBooks(node->children[node->size -1], count, desiredGenre, pageCount);
+        }
+        for (int i = 0; i < node->size; i++) {
+            if (!node->isLeaf && node->books[i]->_pages > pageCount) {
+                printTopBooks(node->children[i], count, desiredGenre, pageCount);
+            }
+        }
+        if (count > 0) {
+            for (int i = 0; i < node->size; i++) {
+                if (node->books[i]->_genres[desiredGenre]) {
+                    cout << "Title: " << node->books[i]->_title << ", Rating: " << node->books[i]->_rating
+                    << ", Pages: "
+                    << node->books[i]->_pages << ", Genres: ";
                     if (node->books[i]->_genres[0] == 1) {
                         std::cout << "Mystery ";
                     }
@@ -155,75 +162,8 @@ private:
                     cout << endl;
                     count--;
                 }
-            }
-        }
-        for (int i = node->size-1; i >= 0; i--)
-        {
-            if (count > 0) {
-                cout << "Title: " << node->books[i]->_title << ", Rating: " << node->books[i]->_rating << ", Pages: " << node->books[i]->_pages << ", Genres: ";
-                if (node->books[i]->_genres[0] == 1)
-                {
-                    std::cout << "Mystery ";
-                }
-                if (node->books[i]->_genres[1] == 1)
-                {
-                    std::cout << "Romance ";
-                }
-                if (node->books[i]->_genres[2] == 1)
-                {
-                    std::cout << "Science Fiction ";
-                }
-                if (node->books[i]->_genres[3] == 1)
-                {
-                    std::cout << "Historical-Fiction ";
-                }if (node->books[i]->_genres[4] == 1)
-                {
-                    std::cout << "Fantasy";
-                }
-                cout << endl;
-                count--;
-            }
-        }
-
-    }
-    void printTopBooks(Node* node, Node* parent, int& count, int desiredGenre, int pageCount) {
-        {
-            for (int i = 1; i < node->children.size(); i++) {
-                if (!node->isLeaf && node->children[i]->books[0]->_pages >= pageCount) {
-                    printTopBooks(node->children[i - 1], node, count, desiredGenre, pageCount);
-                }
-                else if (i == node->children.size() - 1)
-                {
-                    printTopBooks(node->children[i - 1], node, count, desiredGenre, pageCount);
-                }
-            }
-            if (count > 0) {
-                for (int i = 0; i < node->size; i++) {
-                    if (node->books[i]->_genres[desiredGenre]) {
-                        cout << "Title: " << node->books[i]->_title << ", Rating: " << node->books[i]->_rating
-                             << ", Pages: "
-                             << node->books[i]->_pages << ", Genres: ";
-                        if (node->books[i]->_genres[0] == 1) {
-                            std::cout << "Mystery ";
-                        }
-                        if (node->books[i]->_genres[1] == 1) {
-                            std::cout << "Romance ";
-                        }
-                        if (node->books[i]->_genres[2] == 1) {
-                            std::cout << "Science Fiction ";
-                        }
-                        if (node->books[i]->_genres[3] == 1) {
-                            std::cout << "Historical-Fiction ";
-                        }
-                        if (node->books[i]->_genres[4] == 1) {
-                            std::cout << "Fantasy";
-                        }
-                        cout << endl;
-                        count--;
-                    }
-                    if (count == 0){
-                        break;
-                    }
+                if (count == 0){
+                    break;
                 }
             }
         }
@@ -328,7 +268,7 @@ public:
             cout << "No books in the tree." << endl;
             return;
         }
-        printTopBooks(root, nullptr, count, desiredGenre, pageCount);
+        printTopBooks(root, count, desiredGenre, pageCount);
     }
 
     void checkNodes()
