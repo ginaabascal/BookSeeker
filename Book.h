@@ -17,26 +17,26 @@ struct Book {
         memcpy(_genres, genres, 5);
         // TODO: DELETE
         // Prints book info for testing and debugging, delete in final project
-        std::cout << "title: " << title << ", rating: " << rating << ", pages: " << pages << ", genres: ";
-        if (_genres[0] == 1)
-        {
-            std::cout << "Mystery ";
-        }
-        if (_genres[1] == 1)
-        {
-            std::cout << "Romance ";
-        }
-        if (_genres[2] == 1)
-        {
-            std::cout << "Science Fiction ";
-        }
-        if (_genres[3] == 1)
-        {
-            std::cout << "Historical-Fiction ";
-        }if (_genres[4] == 1)
-        {
-            std::cout << "Fantasy";
-        }
-        std::cout << std::endl << std::endl;
+//        std::cout << "title: " << title << ", rating: " << rating << ", pages: " << pages << ", genres: ";
+//        if (_genres[0] == 1)
+//        {
+//            std::cout << "Mystery ";
+//        }
+//        if (_genres[1] == 1)
+//        {
+//            std::cout << "Romance ";
+//        }
+//        if (_genres[2] == 1)
+//        {
+//            std::cout << "Science Fiction ";
+//        }
+//        if (_genres[3] == 1)
+//        {
+//            std::cout << "Historical-Fiction ";
+//        }if (_genres[4] == 1)
+//        {
+//            std::cout << "Fantasy";
+//        }
+//        std::cout << std::endl << std::endl;
     }
 };
