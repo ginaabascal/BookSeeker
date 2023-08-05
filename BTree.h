@@ -9,7 +9,7 @@ private:
     {
         bool isLeaf;
         int size;
-        vector<Book> books;
+        vector<Book*> books;
         vector<Node *> children;
 
         Node(bool leaf)
@@ -84,11 +84,11 @@ private:
                 int pos = 0;
                 if (parent != root) {
                     newParent = findParent(parent);
-                    if (parent->books[0]._pages >= newParent->books[newParent->size-1]._pages) {
+                    if (parent->books[0]->_pages >= newParent->books[newParent->size-1]->_pages) {
                         pos = newParent->children.size()-1;
                     }
                     for (int i = 0; i < newParent->size; i++) {
-                        if (parent->books[0]._pages < newParent->books[i]._pages) {
+                        if (parent->books[0]->_pages < newParent->books[i]->_pages) {
                             if (i < newParent->children.size()) {
                                 pos = i;
                                 break;
@@ -103,26 +103,26 @@ private:
 
 
 
-    void insertNonFull(Node* node, const Book& book) {
+    void insertNonFull(Node* node, Book* book) {
         int i = node->size - 1;
         if (node->isLeaf) {
             bool arr[5] ={false,false,false,false,false};
-            node->books.emplace_back(Book("", 0.0, 0, arr)); // Temporary book for comparison
-            while (i >= 0 && book._pages < node->books[i]._pages) {
+            node->books.emplace_back(nullptr); // Temporary book for comparison
+            while (i >= 0 && book->_pages < node->books[i]->_pages) {
                 node->books[i + 1] = node->books[i];
                 i--;
             }
             node->books[i + 1] = book;
             node->size++;
         } else {
-            while (i >= 0 && book._pages < node->books[i]._pages) {
+            while (i >= 0 && book->_pages < node->books[i]->_pages) {
                 i--;
             }
             i++;
 
             if (node->children[i]->size == 2 * T - 1) {
                 splitChild(node, i);
-                if (book._pages >= node->books[i]._pages) {
+                if (book->_pages >= node->books[i]->_pages) {
                     i++;
                 }
             }
@@ -136,21 +136,21 @@ private:
             for (int i = node->children.size() - 1; i >= 0; i--) {
                 printTopBooks(node->children[i], count);
                 if (count > 0) {
-                    cout << "Title: " << node->books[i]._title << ", Rating: " << node->books[i]._rating << ", Pages: "
-                         << node->books[i]._pages << ", Genres: ";
-                    if (node->books[i]._genres[0] == 1) {
+                    cout << "Title: " << node->books[i]->_title << ", Rating: " << node->books[i]->_rating << ", Pages: "
+                         << node->books[i]->_pages << ", Genres: ";
+                    if (node->books[i]->_genres[0] == 1) {
                         std::cout << "Mystery ";
                     }
-                    if (node->books[i]._genres[1] == 1) {
+                    if (node->books[i]->_genres[1] == 1) {
                         std::cout << "Romance ";
                     }
-                    if (node->books[i]._genres[2] == 1) {
+                    if (node->books[i]->_genres[2] == 1) {
                         std::cout << "Science Fiction ";
                     }
-                    if (node->books[i]._genres[3] == 1) {
+                    if (node->books[i]->_genres[3] == 1) {
                         std::cout << "Historical-Fiction ";
                     }
-                    if (node->books[i]._genres[4] == 1) {
+                    if (node->books[i]->_genres[4] == 1) {
                         std::cout << "Fantasy";
                     }
                     cout << endl;
@@ -162,29 +162,69 @@ private:
         for (int i = node->size-1; i >= 0; i--)
         {
             if (count > 0) {
-                cout << "Title: " << node->books[i]._title << ", Rating: " << node->books[i]._rating << ", Pages: " << node->books[i]._pages << ", Genres: ";
-                if (node->books[i]._genres[0] == 1)
+                cout << "Title: " << node->books[i]->_title << ", Rating: " << node->books[i]->_rating << ", Pages: " << node->books[i]->_pages << ", Genres: ";
+                if (node->books[i]->_genres[0] == 1)
                 {
                     std::cout << "Mystery ";
                 }
-                if (node->books[i]._genres[1] == 1)
+                if (node->books[i]->_genres[1] == 1)
                 {
                     std::cout << "Romance ";
                 }
-                if (node->books[i]._genres[2] == 1)
+                if (node->books[i]->_genres[2] == 1)
                 {
                     std::cout << "Science Fiction ";
                 }
-                if (node->books[i]._genres[3] == 1)
+                if (node->books[i]->_genres[3] == 1)
                 {
                     std::cout << "Historical-Fiction ";
-                }if (node->books[i]._genres[4] == 1)
+                }if (node->books[i]->_genres[4] == 1)
                 {
                     std::cout << "Fantasy";
                 }
                 cout << endl;
                 deleteBook(node, i);
                 count--;
+            }
+        }
+
+    }
+    void printTopBooks(Node* node, Node* parent, int& count, int desiredGenre, int pageCount) {
+        {
+            for (int i = 1; i < node->children.size(); i++) {
+                if (!node->isLeaf && node->children[i]->books[0]->_pages >= pageCount) {
+                    printTopBooks(node->children[i - 1], node, count, desiredGenre, pageCount);
+                }
+                else if (i == node->children.size() - 1)
+                {
+                    printTopBooks(node->children[i - 1], node, count, desiredGenre, pageCount);
+                }
+            }
+            if (count > 0) {
+                for (int i = 0; i < node->size; i++) {
+                    if (node->books[i]->_genres[desiredGenre]) {
+                        cout << "Title: " << node->books[i]->_title << ", Rating: " << node->books[i]->_rating
+                             << ", Pages: "
+                             << node->books[i]->_pages << ", Genres: ";
+                        if (node->books[i]->_genres[0] == 1) {
+                            std::cout << "Mystery ";
+                        }
+                        if (node->books[i]->_genres[1] == 1) {
+                            std::cout << "Romance ";
+                        }
+                        if (node->books[i]->_genres[2] == 1) {
+                            std::cout << "Science Fiction ";
+                        }
+                        if (node->books[i]->_genres[3] == 1) {
+                            std::cout << "Historical-Fiction ";
+                        }
+                        if (node->books[i]->_genres[4] == 1) {
+                            std::cout << "Fantasy";
+                        }
+                        cout << endl;
+                        count--;
+                    }
+                }
             }
         }
 
@@ -204,18 +244,18 @@ private:
         node->size--;
 
     }
-    Node* findSpot(Book& b, Node* r)
+    Node* findSpot(Book* b, Node* r)
     {
         Node *n = r;
         int i = 0;
         int pos = 0;
         while (!n->children[0]->isLeaf) {
-            if (b._pages >= n->books[n->books.size() - 1]._pages) {
+            if (b->_pages >= n->books[n->books.size() - 1]->_pages) {
                 pos = n->children.size() - 1;
             }
             else {
                 for (i = 0; i < n->children.size(); i++) {
-                    if (i < n->size && b._pages < n->books[i]._pages) {
+                    if (i < n->size && b->_pages < n->books[i]->_pages) {
                         if (!n->children[i]->isLeaf) {
                             pos = i;
                             break;
@@ -234,11 +274,11 @@ private:
         int i = 0;
         while (n != node) {
             int pos = 0;
-            if (node->books[0]._pages >= n->books[n->books.size() - 1]._pages) {
+            if (node->books[0]->_pages >= n->books[n->books.size() - 1]->_pages) {
                 pos = n->children.size() - 1;
             }
             for (i = 0; i < n->children.size(); i++) {
-                if (i < n->books.size() && node->books[0]._pages < n->books[i]._pages) {
+                if (i < n->books.size() && node->books[0]->_pages < n->books[i]->_pages) {
                     pos = i;
                     break;
                 }
@@ -258,7 +298,7 @@ public:
         destroyTree(root);
     }
 
-    void Insert(Book& book) {
+    void Insert(Book* book) {
         if (root == nullptr) {
             root = new Node(true);
             root->books.push_back(book);
@@ -267,7 +307,7 @@ public:
             Node* parent = findSpot(book, root);
             int pos = parent->children.size() - 1;
             for(int i = 0; i < parent->size; i++) {
-                if (book._pages < parent->books[i]._pages) {
+                if (book->_pages < parent->books[i]->_pages) {
                     if (i < parent->children.size()) {
                         pos = i;
                         break;
@@ -297,25 +337,19 @@ public:
         }
     }
 
-    void printTopBooks(int count) {
+    void printTopBooks(int count, int desiredGenre, int pageCount) {
         if (root == nullptr) {
             cout << "No books in the tree." << endl;
             return;
         }
-        printTopBooks(root, count);
-    }
-
-    vector<Book> getTopBooks(int count) {
-        vector<Book> topBooks;
-        printTopBooks(root, count);
-        return topBooks;
+        printTopBooks(root, nullptr, count, desiredGenre, pageCount);
     }
 
     void checkNodes()
     {
         for (auto book : root->books)
         {
-            cout << book._pages << ", ";
+            cout << book->_pages << ", ";
         }
         cout << "||";
         cout << "LEVEL 1";
@@ -323,7 +357,7 @@ public:
         {
             for (auto book : child->books)
             {
-                cout << book._pages << ", ";
+                cout << book->_pages << ", ";
             }
             cout << "||";
         }
@@ -332,7 +366,7 @@ public:
         {
             for (auto child : child1->children) {
                 for (auto book: child->books) {
-                    cout << book._pages << ", ";
+                    cout << book->_pages << ", ";
                 }
                 cout << "||";
             }
@@ -343,7 +377,7 @@ public:
                 for (auto child1: child2->children) {
                     for (auto child: child1->children) {
                         for (auto book: child->books) {
-                            cout << book._pages << ", ";
+                            cout << book->_pages << ", ";
                         }
                         cout << "||";
                     }
@@ -359,7 +393,7 @@ public:
                             cout << "NEWROOT";
                             for (auto child: child1->children) {
                                 for (auto book: child->books) {
-                                    cout << book._pages << ", ";
+                                    cout << book->_pages << ", ";
                                 }
                                 cout << "||";
                             }

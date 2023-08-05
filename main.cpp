@@ -5,6 +5,7 @@
 #include <fstream>
 #include "BTree.h"
 #include "BPlusTree.h"
+#include <chrono>
 using namespace std;
 int main() {
     BTree bTree;
@@ -15,7 +16,7 @@ int main() {
     vector<Book*> books;
     vector<int> pageNumbersVisited;
     string line;
-    bool genres[5];
+    bool* genres = new bool[5]{0};
     // Values correspond to T/F values indicating whether books fits genres of
     // {0. Mystery, 1. Romance, 2. Science-Fiction, 3. Historical Fiction, 4. Fantasy}
     string title;
@@ -24,6 +25,7 @@ int main() {
     bool hasGenre = false; // Is true if a book has one of the genres a user can choose to search for
     double rating;
     cout << fixed << setprecision(2); // Makes it so doubles print with two decimal places
+    cout << "Inserting nodes..." << endl;
     while(getline(bookList, line) && times < 1000) {
         istringstream str(line);
         string token;
@@ -114,7 +116,9 @@ int main() {
                 // page count is available, and rating is available
                 if (inEnglish && hasGenre && (pages != -1) && (rating != -1) && (find(pageNumbersVisited.begin(), pageNumbersVisited.end(), pages) == pageNumbersVisited.end())) {
                     title = tempTitle.substr(0, tempTitle.size() - 1);
-                    books.push_back(new Book(title, rating, pages, genres));
+                    Book* b = new Book(title, rating, pages, genres);
+                    bPlusTree.Insert(b);
+                    bTree.Insert(b);
                     pageNumbersVisited.push_back(pages);
                     times++;
                 }
@@ -126,25 +130,44 @@ int main() {
             }
         }
     }
-    for (Book* book : books)
-    {
-        bPlusTree.Insert(*book);
+    int desiredGenre;
+    int hours;
+    int minutes;
+    int readingSpeed;
+    cout << "Enter number corresponding to desired genre (1. Mystery 2. Romance 3. Sci-fi 4. Historical Fiction 5. Fantasy): ";
+    cin >> desiredGenre;
+    desiredGenre--;
+    cout << "\nOn a scale of 1 to 4, with 4 being the fastest, How fast do you read? ";
+    cin >> readingSpeed;
+    cout << "\nHow long would you like the book to take to read? \nHours: ";
+    cin >> hours;
+    cout << "Minutes: ";
+    cin >> minutes;
+    int pageCount = minutes + hours * 60;
+    // Reading speed stats from https://swiftread.com/reading-time/1-page
+    if (readingSpeed == 1) {
+        pageCount = (int)(pageCount/3.3);
     }
-    bPlusTree.checkNodes();
-    bPlusTree.printTopBooks(10);
-//    for (Book* book : books) {
-//        bTree.Insert(*book);
-//    }
-//    cout <<"PRINTING";
-//    bTree.checkNodes();
-//    cout << "Top 10 Books Based on Highest Rating:" << endl;
-//    bTree.printTopBooks(50);
-//    // Delete the top books from the B+ tree
-//
-//    // Free memory for the "books" vector and its elements (Book objects)
-//    for (Book* book : books) {
-//        delete book;
-//    }
-//    books.clear();
+    else if (readingSpeed == 2) {
+        pageCount = (int)(pageCount / 1.7);
+    }
+    else if (readingSpeed == 3) {
+        pageCount = (int)(pageCount / 1.1);
+    }
+    else if (readingSpeed == 5) {
+        pageCount = (int)(pageCount / (5.0/6.0));
+    }
+    cout << "Reading for " << hours << " hours and " << minutes << " minutes at a speed level of " << readingSpeed <<
+    " is equivalent to about " << pageCount << " pages" << endl << "Books with close to " << pageCount << " pages: " << endl << endl;
+    cout << "BPLUS TREE: ";
+    auto start = chrono::steady_clock::now();
+    bPlusTree.printTopBooks(10, desiredGenre, pageCount);
+    auto end = chrono::steady_clock::now();
+    cout << "time taken to find books: " << chrono::duration_cast<chrono::microseconds >(end-start).count() << " microseconds" << endl;
+    cout << "BTREE:" << endl;
+    start = chrono::steady_clock::now();
+    bTree.printTopBooks(10, desiredGenre, pageCount);
+    end = chrono::steady_clock::now();
+    cout << "time taken to find books: " << chrono::duration_cast<chrono::microseconds >(end-start).count() << " microseconds" << endl;
     return 0;
 }
