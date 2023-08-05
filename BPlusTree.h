@@ -10,7 +10,7 @@ private:
         vector<Book*> books;
         int size = 0;
         vector<double> keys;
-        vector<Node* > children;
+        vector<Node*> children;
         bool isLeaf = false;
         Node* sibling;
 

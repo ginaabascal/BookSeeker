@@ -10,7 +10,7 @@ private:
         bool isLeaf;
         int size;
         vector<Book*> books;
-        vector<Node*> children;
+        vector<Node *> children;
 
         Node(bool leaf)
         {
@@ -20,17 +20,17 @@ private:
 
     };
 
-    Node* root;
+    Node *root;
     int T = 5; // B+ tree parameter
 
-    void destroyTree(Node* node)
+    void destroyTree(Node *node)
     {
         if (node == nullptr) {
             return;
         }
 
         if (!node->isLeaf) {
-            for (Node* child: node->children) {
+            for (Node *child: node->children) {
                 destroyTree(child);
             }
         }
@@ -38,7 +38,7 @@ private:
         delete node;
     }
 
-    void splitChild(Node* parent, int childIndex)
+    void splitChild(Node *parent, int childIndex)
     {
         if (parent == nullptr) {
             Node* newRoot = new Node(false);
@@ -48,8 +48,8 @@ private:
             root->size = 1;
         }
         else {
-            Node* child = parent->children[childIndex];
-            Node* newNode = new Node(child->isLeaf);
+            Node *child = parent->children[childIndex];
+            Node *newNode = new Node(child->isLeaf);
             int midIndex = child->size / 2;
 
             // Copy elements to the new node without resizing the original child vector
@@ -81,7 +81,7 @@ private:
             newNode->size = midIndex;
 
             if (parent->books.size() >= 2 * T - 1) {
-                Node* newParent = nullptr;
+                Node *newParent = nullptr;
                 int pos = 0;
                 if (parent != root) {
                     newParent = findParent(parent);
@@ -170,10 +170,10 @@ private:
 
     }
 
-    // Finds and returns parent of node book will be inserted
+    // Finds parent of node book will be inserted into
     Node* findSpot(Book* book, Node* node)
     {
-        Node* n = node;
+        Node *n = node;
         int i = 0;
         int pos = 0;
         while (!n->children[0]->isLeaf) {
@@ -195,11 +195,11 @@ private:
         return n;
     }
 
-    // Finds and returns parent of a given node
+    // Returns parent of the passed in node
     Node* findParent(Node* node)
     {
-        Node* n = root;
-        Node* parent;
+        Node *n = root;
+        Node *parent;
         int i = 0;
         while (n != node) {
             int pos = 0;
