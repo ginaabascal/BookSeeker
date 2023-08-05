@@ -10,7 +10,7 @@ private:
         bool isLeaf;
         int size;
         vector<Book*> books;
-        vector<Node *> children;
+        vector<Node*> children;
 
         Node(bool leaf)
         {
@@ -20,17 +20,17 @@ private:
 
     };
 
-    Node *root;
+    Node* root;
     int T = 5; // B+ tree parameter
 
-    void destroyTree(Node *node)
+    void destroyTree(Node* node)
     {
         if (node == nullptr) {
             return;
         }
 
         if (!node->isLeaf) {
-            for (Node *child: node->children) {
+            for (Node* child: node->children) {
                 destroyTree(child);
             }
         }
@@ -38,7 +38,7 @@ private:
         delete node;
     }
 
-    void splitChild(Node *parent, int childIndex)
+    void splitChild(Node* parent, int childIndex)
     {
         if (parent == nullptr) {
             Node* newRoot = new Node(false);
@@ -48,8 +48,8 @@ private:
             root->size = 1;
         }
         else {
-            Node *child = parent->children[childIndex];
-            Node *newNode = new Node(child->isLeaf);
+            Node* child = parent->children[childIndex];
+            Node* newNode = new Node(child->isLeaf);
             int midIndex = child->size / 2;
 
             // Copy elements to the new node without resizing the original child vector
@@ -81,7 +81,7 @@ private:
             newNode->size = midIndex;
 
             if (parent->books.size() >= 2 * T - 1) {
-                Node *newParent = nullptr;
+                Node* newParent = nullptr;
                 int pos = 0;
                 if (parent != root) {
                     newParent = findParent(parent);
@@ -102,12 +102,11 @@ private:
         }
     }
 
-
-
     void insertNonFull(Node* node, Book* book) {
         int i = node->size - 1;
         if (node->isLeaf) {
             node->books.emplace_back(nullptr); // Temporary book for comparison
+            // Shifts books that come after new book, assigns position for new book
             while (i >= 0 && book->_pages < node->books[i]->_pages) {
                 node->books[i + 1] = node->books[i];
                 i--;
@@ -130,13 +129,13 @@ private:
         }
     }
 
-    void printTopBooks(Node* node, int& count, int desiredGenre, int pageCount) {
+    void printCloseBooks(Node* node, int& count, int desiredGenre, int pageCount) {
         if (!node->isLeaf && pageCount > node->books[node->size - 1]->_pages){
-            printTopBooks(node->children[node->size -1], count, desiredGenre, pageCount);
+            printCloseBooks(node->children[node->size -1], count, desiredGenre, pageCount);
         }
         for (int i = 0; i < node->size; i++) {
             if (!node->isLeaf && node->books[i]->_pages > pageCount) {
-                printTopBooks(node->children[i], count, desiredGenre, pageCount);
+                printCloseBooks(node->children[i], count, desiredGenre, pageCount);
             }
         }
         if (count > 0) {
@@ -171,9 +170,10 @@ private:
 
     }
 
+    // Finds and returns parent of node book will be inserted
     Node* findSpot(Book* book, Node* node)
     {
-        Node *n = node;
+        Node* n = node;
         int i = 0;
         int pos = 0;
         while (!n->children[0]->isLeaf) {
@@ -194,10 +194,12 @@ private:
         }
         return n;
     }
+
+    // Finds and returns parent of a given node
     Node* findParent(Node* node)
     {
-        Node *n = root;
-        Node *parent;
+        Node* n = root;
+        Node* parent;
         int i = 0;
         while (n != node) {
             int pos = 0;
@@ -263,69 +265,12 @@ public:
         }
     }
 
-    void printTopBooks(int count, int desiredGenre, int pageCount) {
+    // Prints books with amount of pages close to given pageCount and with user inputted genre
+    void printCloseBooks(int count, int desiredGenre, int pageCount) {
         if (root == nullptr) {
             cout << "No books in the tree." << endl;
             return;
         }
-        printTopBooks(root, count, desiredGenre, pageCount);
+        printCloseBooks(root, count, desiredGenre, pageCount);
     }
-
-    void checkNodes()
-    {
-        for (auto book : root->books)
-        {
-            cout << book->_pages << ", ";
-        }
-        cout << "||";
-        cout << "LEVEL 1";
-        for (auto child : root->children)
-        {
-            for (auto book : child->books)
-            {
-                cout << book->_pages << ", ";
-            }
-            cout << "||";
-        }
-        cout << "LEVEL 2";
-        for (auto child1 : root->children)
-        {
-            for (auto child : child1->children) {
-                for (auto book: child->books) {
-                    cout << book->_pages << ", ";
-                }
-                cout << "||";
-            }
-            cout << "NEWROOT";
-        }
-        cout << "LEVEL 3";
-            for (auto child2 : root->children) {
-                for (auto child1: child2->children) {
-                    for (auto child: child1->children) {
-                        for (auto book: child->books) {
-                            cout << book->_pages << ", ";
-                        }
-                        cout << "||";
-                    }
-                    cout << "NEWROOT";
-                }
-            }
-
-        cout << "LEVEL 4";
-            {
-                for (auto child3 :root->children) {
-                    for (auto child2: child3->children) {
-                        for (auto child1: child2->children) {
-                            cout << "NEWROOT";
-                            for (auto child: child1->children) {
-                                for (auto book: child->books) {
-                                    cout << book->_pages << ", ";
-                                }
-                                cout << "||";
-                            }
-                        }
-                    }
-                }
-            }
-        }
 };

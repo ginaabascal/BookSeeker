@@ -12,7 +12,6 @@ int main() {
     BTree bTree;
     BPlusTree bPlusTree;
 
-    // FIXME: used for testing. Delete in final code.
     int times = 0;
     ifstream bookList("goodreads_books.json");
     vector<Book*> books;
@@ -139,6 +138,8 @@ int main() {
     int minutes;
     int readingSpeed;
     int choice;
+
+    // Gets user input and on a loop until user decides to exit
     while (true) {
         cout << "Enter number corresponding to desired genre (1. Mystery 2. Romance 3. Sci-fi 4. Historical Fiction 5. Fantasy): ";
         cin >> desiredGenre;
@@ -191,12 +192,12 @@ int main() {
         " is equivalent to about " << pageCount << " pages" << endl << "Books with close to " << pageCount << " pages: " << endl << endl;
         cout << endl << "BTREE:" << endl;
         auto start = chrono::steady_clock::now();
-        bTree.printTopBooks(10, desiredGenre, pageCount);
+        bTree.printCloseBooks(10, desiredGenre, pageCount);
         auto end = chrono::steady_clock::now();
         cout << "time taken to find books: " << chrono::duration_cast<chrono::microseconds >(end-start).count() << " microseconds" << endl;
         cout << endl << "BPlusTREE:" << endl;
         start = chrono::steady_clock::now();
-        bPlusTree.printTopBooks(10, desiredGenre, pageCount);
+        bPlusTree.printCloseBooks(10, desiredGenre, pageCount);
         end = chrono::steady_clock::now();
         cout << "time taken to find books: " << chrono::duration_cast<chrono::microseconds >(end-start).count() << " microseconds" << endl;
         cout << endl << "Enter 1 to search again or any other number to quit: ";
