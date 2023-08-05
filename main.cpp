@@ -16,7 +16,7 @@ int main() {
     int times = 0;
     ifstream bookList("goodreads_books.json");
     vector<Book*> books;
-    vector<int> pageNumbersVisited;
+    vector<bool> pageNumbersVisited(10000);
     string line;
     bool* genres = new bool[5]{0};
 
@@ -36,7 +36,7 @@ int main() {
         while (str >> token) {
             if (token == "\"language_code\":") {
                 str >> token;
-                if (token == "\"eng\"," || token == "\"\",") {
+                if (token == "\"eng\",") {
                     inEnglish = true;
                 }
                 else {
@@ -119,13 +119,14 @@ int main() {
                 }
                 // Creates and object and adds to vector of books if language is English, it contains a searchable genre
                 // page count is available, and rating is available
-                if (inEnglish && hasGenre && (pages != -1) && (rating != -1) && (find(pageNumbersVisited.begin(), pageNumbersVisited.end(), pages) == pageNumbersVisited.end())) {
-                    title = tempTitle.substr(0, tempTitle.size() - 1);
-                    Book* b = new Book(title, rating, pages, genres);
-                    bPlusTree.Insert(b);
-                    bTree.Insert(b);
-                    pageNumbersVisited.push_back(pages);
-                    times++;
+
+                if (inEnglish && hasGenre && tempTitle[1] != '\\' && (pages != -1) && (rating != -1) && times < 1000 && !pageNumbersVisited[pages]) {
+                        title = tempTitle.substr(0, tempTitle.size() - 1);
+                        Book *b = new Book(title, rating, pages, genres);
+                        bPlusTree.Insert(b);
+                        bTree.Insert(b);
+                        pageNumbersVisited[pages] = true;
+                        times++;
                 }
                 // Resets genre array and hasGenre bool
                 hasGenre = false;
@@ -182,13 +183,13 @@ int main() {
     bPlusTree.printTopBooks(10, desiredGenre, pageCount);
     auto end = chrono::steady_clock::now();
     cout << "time taken to find books: " << chrono::duration_cast<chrono::microseconds >(end-start).count() << " microseconds" << endl;
-    
+
     cout << "BTREE:" << endl;
     start = chrono::steady_clock::now();
     bTree.printTopBooks(10, desiredGenre, pageCount);
     end = chrono::steady_clock::now();
     cout << "time taken to find books: " << chrono::duration_cast<chrono::microseconds >(end-start).count() << " microseconds" << endl;
-   
+
 
     cout << "\nEnter 1 to search again or any other number to quit: ";
     cin >> choice;
@@ -199,6 +200,4 @@ int main() {
     }
 
     return 0;
-}
-
 }
